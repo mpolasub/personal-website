@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matthew Polasub</title>
+
+  <template id="__bundler_thumbnail" data-bg-color="#000000">
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="300" fill="#000"/>
+      <text x="200" y="140" font-family="sans-serif" font-weight="700" font-size="52" fill="#fff" text-anchor="middle">MP</text>
+      <text x="200" y="180" font-family="sans-serif" font-size="14" fill="rgb(93,177,255)" text-anchor="middle" letter-spacing="6">PORTFOLIO</text>
+      <line x1="140" y1="195" x2="260" y2="195" stroke="rgba(93,177,255,0.4)" stroke-width="1"/>
+    </svg>
+  </template>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Kantumruy+Pro:wght@700&family=Rubik:ital,wght@0,300;0,400;0,500;1,700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue: rgb(93, 177, 255);
+      --purple: rgb(159, 151, 255);
+      --dark: rgb(42, 42, 42);
+      --nav-h: 64px;
+    }
+
+    html, body, #root {
+      width: 100%; height: 100%; background: #000; overflow: hidden;
+    }
+
+    /* ── Scroll container ── */
+    .scroll-wrap {
+      width: 100%; height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y proximity;
+    }
+
+    .scroll-wrap::-webkit-scrollbar { display: none; }
+    .scroll-wrap { scrollbar-width: none; }
+
+    /* ── Sections ── */
+    .section {
+      width: 100%; min-height: 100vh;
+      scroll-snap-align: start;
+      position: relative; overflow: hidden;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: fixed; top: 0; left: 0; width: 100%;
+      height: var(--nav-h);
+      background: rgba(42,42,42,0.92);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center;
+      padding: 0 6vw; gap: clamp(20px, 3vw, 40px);
+      z-index: 200;
+    }
+    .nav-logo {
+      margin-right: auto;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: 18px;
+      color: #fff; letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .nav-link {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: #fff; letter-spacing: 0.12em;
+      text-transform: uppercase; cursor: pointer;
+      transition: color 0.25s ease;
+      background: none; border: none;
+    }
+    .nav-link:hover { color: var(--blue); }
+
+    /* ── Swap text ── */
+    .swap {
+      position: relative; display: inline-block; cursor: default;
+    }
+    .swap .orig {
+      display: block;
+      transition: opacity 0.35s ease;
+    }
+    .swap .alt {
+      position: absolute; left: 0; top: 0;
+      opacity: 0; color: var(--blue);
+      transition: opacity 0.35s ease;
+      white-space: nowrap; pointer-events: none;
+    }
+    .swap:hover .orig { opacity: 0.15; }
+    .swap:hover .alt  { opacity: 1; }
+
+    /* ── Expand text on hover ── */
+    .expand {
+      display: inline-block;
+      transition: letter-spacing 0.4s cubic-bezier(.16,1,.3,1);
+      cursor: default;
+    }
+    .expand:hover { letter-spacing: 0.15em; }
+
+    /* ── Blue radial proximity overlay ── */
+    .proximity-overlay {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    /* ── Section: Hero ── */
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: #000;
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: calc(var(--nav-h) + 6vh) 6vw 6vh;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr min(420px, 35vw);
+      gap: clamp(24px, 3vw, 48px);
+      align-items: center;
+    }
+    .hero-left { position: relative; }
+    .hero-plus-field {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    .hero-plus {
+      position: absolute;
+      font-family: 'Kantumruy Pro', sans-serif;
+      font-weight: 700;
+      color: var(--blue);
+      line-height: 1;
+      user-select: none;
+    }
+    .hero-greeting {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300; font-size: clamp(14px, 1.6vw, 22px);
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.05em;
+      margin-bottom: clamp(10px, 1.2vh, 16px);
+    }
+    .hero-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(32px, 5vw, 72px);
+      color: #fff; line-height: 1.05;
+      margin-bottom: clamp(14px, 2vh, 24px);
+      text-wrap: balance;
+    }
+    .hero-name .blue { color: var(--blue); }
+    .hero-sub {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 300; font-size: clamp(14px, 1.4vw, 20px);
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6; max-width: 520px;
+    }
+    .hero-sub strong {
+      color: rgba(255,255,255,0.9);
+      font-weight: 500; font-style: italic;
+    }
+
+    /* Spline placeholder */
+    .spline-placeholder {
+      width: 100%; aspect-ratio: 1;
+      max-height: min(380px, 38vh);
+      border-radius: clamp(12px, 1.5vw, 20px);
+      background: rgb(28,35,46);
+      border: 1px solid rgba(93,177,255,0.15);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      color: rgba(93,177,255,0.45);
+      font-family: 'Rubik', monospace;
+      font-size: 13px; letter-spacing: 0.06em;
+    }
+    .spline-icon {
+      width: clamp(40px, 5vw, 64px); height: clamp(40px, 5vw, 64px);
+      border: 2px solid rgba(93,177,255,0.3);
+      transform: rotate(45deg);
+    }
+
+    /* ── Section: Interests ── */
+    .interests-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgb(8,12,20) 0%, rgb(12,16,26) 100%);
+    }
+    .interests-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 0;
+      padding: calc(var(--nav-h) + 4vh) 6vw 4vh;
+    }
+    .interests-header {
+      grid-column: 1 / -1;
+      margin-bottom: clamp(20px, 3vh, 36px);
+    }
+    .interests-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: var(--blue); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .interests-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(28px, 4vw, 60px);
+      color: #fff;
+    }
+
+    /* Blueprint room */
+    .blueprint-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .blueprint-svg-wrap {
+      width: 100%; max-width: 540px;
+      position: relative;
+    }
+    .blueprint-svg-wrap svg {
+      width: 100%; height: auto;
+    }
+
+    /* Hotspots */
+    .hotspot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+    }
+    .hotspot-ring {
+      width: clamp(28px, 3.5vw, 46px);
+      height: clamp(28px, 3.5vw, 46px);
+      border-radius: 50%;
+      border: 2px solid var(--blue);
+      background: rgba(93,177,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(13px, 1.6vw, 20px);
+      transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+      box-shadow: 0 0 0 0 rgba(93,177,255,0.3);
+    }
+    .hotspot:hover .hotspot-ring,
+    .hotspot.active .hotspot-ring {
+      background: rgba(93,177,255,0.25);
+      transform: scale(1.15);
+      box-shadow: 0 0 0 6px rgba(93,177,255,0.12);
+    }
+    .hotspot-pulse {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(93,177,255,0.3);
+      animation: pulse 2.4s ease-out infinite;
+    }
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      100% { transform: scale(1.7); opacity: 0; }
+    }
+    .hotspot.active .hotspot-pulse { animation: none; }
+
+    /* Info panel */
+    .interests-panel {
+      display: flex; align-items: center;
+      padding-left: clamp(24px, 4vw, 56px);
+    }
+    .interests-panel-inner {
+      width: 100%;
+    }
+    .panel-empty {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(14px, 1.2vw, 17px);
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.04em;
+    }
+    .panel-card {
+      animation: fadeSlideIn 0.35s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateX(16px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .panel-icon {
+      font-size: clamp(40px, 5.5vw, 72px);
+      margin-bottom: clamp(12px, 1.8vh, 20px);
+      line-height: 1;
+    }
+    .panel-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(24px, 3vw, 44px);
+      color: #fff; margin-bottom: clamp(12px, 1.5vh, 18px);
+    }
+    .panel-desc {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(14px, 1.2vw, 18px);
+      color: rgba(255,255,255,0.55);
+      line-height: 1.75; max-width: 420px;
+    }
+    .panel-hint {
+      margin-top: clamp(14px, 2vh, 24px);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(93,177,255,0.4);
+    }
+
+    /* ── Section: About ── */
+    .about-bg {
+      position: absolute; inset: 0;
+      background: rgb(42,42,42);
+    }
+    .about-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: min(380px, 28vw) 1fr;
+      gap: clamp(32px, 4vw, 64px);
+      align-items: center;
+      padding: calc(var(--nav-h) + 5vh) 6vw 5vh;
+    }
+    .about-photo {
+      width: 100%; aspect-ratio: 9/11;
+      border-radius: clamp(14px, 1.8vw, 24px);
+      background: url('./assets/photo.jpg') center / cover no-repeat;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+    .about-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: var(--blue); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: clamp(12px, 2vh, 20px);
+    }
+    .about-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(28px, 4vw, 60px);
+      color: #fff; line-height: 1.1; margin-bottom: clamp(18px, 2.5vh, 32px);
+    }
+    .about-body {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 400; font-size: clamp(14px, 1.3vw, 18px);
+      color: rgba(255,255,255,0.7);
+      line-height: 1.75; max-width: 600px;
+    }
+
+    /* ── Section: Skills ── */
+    .skills-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgb(42,42,42) 0%, #000 100%);
+    }
+    .skills-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 5vh) 6vw 5vh;
+    }
+    .skills-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: var(--blue); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: clamp(12px, 1.5vh, 20px);
+    }
+    .skills-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(28px, 4vw, 60px);
+      color: #fff; margin-bottom: clamp(32px, 5vh, 56px);
+    }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(24px, 3vw, 40px); max-width: min(900px, 80vw);
+    }
+    .skills-group-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: clamp(12px, 1.8vh, 20px);
+    }
+    .skills-list {
+      display: flex; flex-direction: column; gap: clamp(8px, 1.2vh, 14px);
+    }
+    .skill-tag {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 400; font-size: clamp(15px, 1.4vw, 20px);
+      color: #fff;
+      cursor: default;
+      transition: color 0.25s ease;
+    }
+    .skill-tag:hover { color: var(--blue); }
+
+    /* ── Section: Contact ── */
+    .contact-bg {
+      position: absolute; inset: 0;
+      background: #000;
+    }
+    .contact-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center;
+      padding: calc(var(--nav-h) + 5vh) 6vw 5vh;
+    }
+    .contact-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: var(--blue); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: clamp(14px, 2vh, 24px);
+    }
+    .contact-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(36px, 6vw, 88px);
+      color: #fff; line-height: 1.05;
+      margin-bottom: clamp(20px, 3.5vh, 40px);
+      text-wrap: balance;
+    }
+    .contact-sub {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(14px, 1.3vw, 18px); color: rgba(255,255,255,0.5);
+      margin-bottom: clamp(32px, 5vh, 56px);
+    }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(12px, 1vw, 14px);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #000; background: var(--blue);
+      border: none; border-radius: 100px;
+      padding: clamp(12px, 1.5vh, 18px) clamp(24px, 3vw, 40px);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .contact-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(93,177,255,0.4);
+    }
+
+    /* ── Section: Experience & Education ── */
+    .exp-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #000 0%, rgb(18,22,32) 100%);
+    }
+    .exp-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      padding: calc(var(--nav-h) + 4vh) 6vw 4vh;
+    }
+    .exp-tabs {
+      display: flex; gap: 2px;
+      margin-bottom: clamp(24px, 3.5vh, 44px);
+      background: rgba(255,255,255,0.04);
+      border-radius: 100px; padding: 4px;
+      width: fit-content; flex-shrink: 0;
+    }
+    .exp-tab {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: clamp(11px, 1vw, 13px);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      background: none; border: none;
+      padding: clamp(8px,1vh,12px) clamp(18px,2.5vw,32px);
+      border-radius: 100px; cursor: pointer;
+      transition: color 0.25s, background 0.25s;
+    }
+    .exp-tab.active { color: #fff; background: rgba(93,177,255,0.15); }
+    .exp-tab:hover:not(.active) { color: rgba(255,255,255,0.7); }
+    .exp-list {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      gap: clamp(12px, 2vh, 20px);
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .exp-list::-webkit-scrollbar { display: none; }
+    .exp-item {
+      display: grid;
+      grid-template-columns: clamp(100px,14vw,180px) 1fr;
+      gap: clamp(20px,3vw,48px);
+      padding: clamp(18px,2.5vw,28px) clamp(20px,3vw,36px);
+      border-radius: clamp(14px,1.8vw,20px);
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .exp-item:hover {
+      border-color: rgba(93,177,255,0.2);
+      background: rgba(93,177,255,0.04);
+    }
+    .exp-date {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(11px,1vw,13px);
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.04em; line-height: 1.5; padding-top: 3px;
+    }
+    .exp-role {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(15px,1.6vw,22px);
+      color: #fff; margin-bottom: 4px;
+    }
+    .exp-org {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: clamp(12px,1.1vw,15px);
+      color: var(--blue); margin-bottom: clamp(8px,1.2vh,14px);
+    }
+    .exp-desc {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(13px,1.1vw,15px);
+      color: rgba(255,255,255,0.5); line-height: 1.7;
+    }
+    .exp-tags {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-top: clamp(10px,1.4vh,16px);
+    }
+    .exp-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px; padding: 4px 10px;
+    }
+
+    /* ── Section: Projects ── */
+    .projects-bg {
+      position: absolute; inset: 0;
+      background: #000;
+    }
+    .projects-content {
+      position: relative; z-index: 2;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 5vh) 6vw 5vh;
+      overflow: hidden;
+    }
+    .projects-header {
+      display: flex; align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: clamp(24px, 4vh, 48px);
+      flex-shrink: 0;
+    }
+    .projects-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600; font-size: 13px;
+      color: var(--blue); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .projects-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(28px, 4vw, 60px);
+      color: #fff;
+    }
+    .projects-counter {
+      font-family: 'Rubik', sans-serif;
+      font-size: 14px; color: rgba(255,255,255,0.3);
+      letter-spacing: 0.08em;
+      padding-bottom: 6px;
+    }
+    .projects-counter span { color: #fff; }
+
+    /* Carousel track */
+    .carousel-outer {
+      position: relative; flex: 1; min-height: 0;
+      display: flex; align-items: stretch;
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex; width: 100%;
+      transition: transform 0.6s cubic-bezier(.16,1,.3,1);
+      will-change: transform;
+    }
+    .project-card {
+      flex-shrink: 0;
+      width: 100%;
+      border-radius: clamp(16px, 2vw, 28px);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 8px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+      transition: border-color 0.3s ease;
+    }
+    .project-card:hover {
+      border-color: rgba(93,177,255,0.25);
+    }
+    .project-card-thumb {
+      background: rgba(93,177,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      min-height: 0;
+    }
+    .project-card-thumb-inner {
+      width: clamp(56px, 8vw, 110px); height: clamp(56px, 8vw, 110px);
+      border: 2px solid rgba(93,177,255,0.2);
+      border-radius: clamp(12px, 1.5vw, 20px);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(93,177,255,0.4);
+      font-family: 'Montserrat', monospace;
+      font-size: clamp(20px, 3vw, 40px); font-weight: 700;
+    }
+    .project-card-body {
+      padding: clamp(28px, 4vw, 56px);
+      display: flex; flex-direction: column;
+      justify-content: center;
+      gap: clamp(12px, 1.8vh, 20px);
+    }
+    .project-card-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700; font-size: clamp(20px, 2.4vw, 36px); color: #fff;
+    }
+    .project-card-desc {
+      font-family: 'Rubik', sans-serif;
+      font-size: clamp(14px, 1.2vw, 18px); color: rgba(255,255,255,0.55);
+      line-height: 1.7;
+    }
+    .project-card-tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 4px;
+    }
+    .project-tag {
+      font-family: 'Montserrat', sans-serif;
+      font-size: clamp(9px, 0.75vw, 11px); font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--blue);
+      border: 1px solid rgba(93,177,255,0.25);
+      border-radius: 100px; padding: 5px 14px;
+    }
+
+    /* Arrow buttons */
+    .carousel-arrows {
+      display: flex; gap: 12px; margin-top: clamp(20px, 3vh, 36px);
+      flex-shrink: 0;
+    }
+    .carousel-arrow {
+      width: clamp(36px, 4vw, 48px); height: clamp(36px, 4vw, 48px);
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: clamp(14px, 1.4vw, 18px);
+      transition: border-color 0.25s, background 0.25s, transform 0.2s;
+    }
+    .carousel-arrow:hover {
+      border-color: var(--blue);
+      background: rgba(93,177,255,0.1);
+    }
+    .carousel-arrow:active { transform: scale(0.93); }
+    .carousel-arrow:disabled {
+      opacity: 0.2; cursor: default;
+      pointer-events: none;
+    }
+
+    /* Progress bar */
+    .carousel-progress {
+      display: flex; gap: 8px; align-items: center;
+      margin-top: clamp(20px, 3vh, 36px);
+    }
+    .carousel-pip {
+      height: 2px; border-radius: 2px;
+      background: rgba(255,255,255,0.15);
+      transition: width 0.4s cubic-bezier(.16,1,.3,1), background 0.4s ease;
+      cursor: pointer;
+    }
+    .carousel-pip.active {
+      background: var(--blue);
+    }
+
+    /* ── Scroll dot indicator ── */
+    .scroll-dots {
+      position: fixed; right: 28px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 150;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .scroll-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .scroll-dot.active {
+      background: var(--blue);
+      transform: scale(1.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const SECTIONS = ['home', 'about', 'skills', 'experience', 'projects', 'interests', 'contact'];
+
+    function SwapText({ children, alt, style, className }) {
+      return (
+        <span className={`swap ${className || ''}`} style={style}>
+          <span className="orig">{children}</span>
+          <span className="alt">{alt}</span>
+        </span>
+      );
+    }
+
+    function Nav({ activeSection, scrollTo }) {
+      return (
+        <nav className="nav">
+          <div className="nav-logo" onClick={() => scrollTo('home')}>MP</div>
+          {['About', 'Skills', 'Experience', 'Projects', 'Interests', 'Contact'].map(item => (
+            <button key={item} className="nav-link"
+              onClick={() => scrollTo(item.toLowerCase())}>
+              {item}
+            </button>
+          ))}
+        </nav>
+      );
+    }
+
+    function HeroSection() {
+      const plusPositions = [
+        { top: '12%', left: '2%', size: 120 },
+        { top: '72%', left: '5%', size: 90 },
+        { top: '30%', left: '55%', size: 60 },
+        { top: '82%', left: '40%', size: 140 },
+        { top: '8%', left: '42%', size: 80 },
+      ];
+
+      return (
+        <section className="section" data-section="home">
+          <div className="hero-bg" />
+          <div className="hero-content">
+            <div className="hero-left">
+              {/* Plus decorators */}
+              <div className="hero-plus-field">
+                {plusPositions.map((p, i) => (
+                  <span key={i} className="hero-plus" style={{
+                    top: p.top, left: p.left, fontSize: p.size,
+                    opacity: 0.12 + i * 0.04,
+                  }}>+</span>
+                ))}
+              </div>
+              <p className="hero-greeting">Hi, my name's</p>
+              <h1 className="hero-name">
+                <SwapText alt="Engineer. Builder. ☻">
+                  MATTHEW <span className="blue">POLASUB.</span>
+                </SwapText>
+              </h1>
+              <p className="hero-sub">
+                Full-time student at Columbia University —<br />
+                <strong>part-time bad-ass when I'm coding.</strong>
+              </p>
+            </div>
+
+            <div>
+              <div className="spline-placeholder">
+                <div className="spline-icon" />
+                <span>3D room · spline</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    const INTERESTS = [
+      {
+        icon: '🎸',
+        name: 'Guitar',
+        desc: 'Been playing since high school. Mostly finger-style and indie rock. My Fender Stratocaster is always within arm\'s reach.',
+      },
+      {
+        icon: '🏎️',
+        name: 'Cars',
+        desc: 'JDM enthusiast at heart. I follow motorsport closely and spend way too much time on configurators. Dream car: an R34 GTR.',
+      },
+      {
+        icon: '♟️',
+        name: 'Chess',
+        desc: 'Rated ~1400 on Chess.com. I play blitz mostly, and I\'m slowly working through the classics.',
+      },
+      {
+        icon: '⌚',
+        name: 'Watches',
+        desc: 'Fascinated by mechanical movements and design. Currently wearing a Seiko SKX. One day — a Submariner.',
+      },
+    ];
+
+    function InterestsSection() {
+      const [active, setActive] = React.useState(null);
+      const toggle = (i) => setActive(prev => prev === i ? null : i);
+      const current = active !== null ? INTERESTS[active] : null;
+
+      // Hotspot positions as % of SVG viewBox (600×520)
+      const hotspots = [
+        { x: '34%', y: '55%', i: 0 }, // guitar — bookshelf area (left wall)
+        { x: '74%', y: '57%', i: 1 }, // cars — desk top (right wall)
+        { x: '37%', y: '30%', i: 2 }, // chess — door area (left wall)
+        { x: '80%', y: '46%', i: 3 }, // watches — monitor on desk
+      ];
+
+      return (
+        <section className="section" data-section="interests">
+          <div className="interests-bg" />
+          <div className="interests-content">
+            <div className="interests-header">
+              <p className="interests-label">Beyond the code</p>
+              <h2 className="interests-heading">Interests</h2>
+            </div>
+
+            {/* Blueprint left */}
+            <div className="blueprint-wrap">
+              <div className="blueprint-svg-wrap">
+                {/* Isometric room sketch in SVG */}
+                <svg viewBox="0 0 600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* ── Room shell ── */}
+                  {/* Floor */}
+                  <polygon points="300,260 560,390 300,520 40,390"
+                    fill="rgba(93,177,255,0.03)" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                  {/* Left wall */}
+                  <polygon points="40,130 300,0 300,260 40,390"
+                    fill="rgba(93,177,255,0.02)" stroke="rgba(93,177,255,0.14)" strokeWidth="1"/>
+                  {/* Right wall */}
+                  <polygon points="300,0 560,130 560,390 300,260"
+                    fill="rgba(93,177,255,0.015)" stroke="rgba(93,177,255,0.12)" strokeWidth="1"/>
+                  {/* Ridge lines */}
+                  <line x1="300" y1="0" x2="300" y2="260" stroke="rgba(93,177,255,0.25)" strokeWidth="1.5"/>
+                  <line x1="40" y1="390" x2="300" y2="260" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                  <line x1="560" y1="390" x2="300" y2="260" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+
+                  {/* ── Door — left wall, center ── */}
+                  {/* Door opening (darker fill) */}
+                  <polygon points="209,150 183,163 183,293 209,280"
+                    fill="rgba(0,0,0,0.4)" stroke="rgba(93,177,255,0.35)" strokeWidth="1.2"/>
+                  {/* Door frame sides */}
+                  <line x1="209" y1="150" x2="209" y2="280" stroke="rgba(93,177,255,0.4)" strokeWidth="1.5"/>
+                  <line x1="183" y1="163" x2="183" y2="293" stroke="rgba(93,177,255,0.3)" strokeWidth="1.2"/>
+                  {/* Door top */}
+                  <line x1="209" y1="150" x2="183" y2="163" stroke="rgba(93,177,255,0.4)" strokeWidth="1.5"/>
+                  {/* Door panel lines */}
+                  <line x1="209" y1="195" x2="183" y2="207" stroke="rgba(93,177,255,0.15)" strokeWidth="0.8"/>
+                  <line x1="209" y1="237" x2="183" y2="249" stroke="rgba(93,177,255,0.15)" strokeWidth="0.8"/>
+                  {/* Door knob */}
+                  <circle cx="191" cy="225" r="3" fill="rgba(93,177,255,0.5)" stroke="rgba(93,177,255,0.6)" strokeWidth="0.8"/>
+
+                  {/* ── Bookshelf — left wall, back ── */}
+                  {/* Side face (l=0.7) */}
+                  <polygon points="123,185 149,198 149,367 123,354"
+                    fill="rgba(93,177,255,0.04)" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                  {/* Front face (r=0.12) */}
+                  <polygon points="227,159 149,198 149,367 227,328"
+                    fill="rgba(93,177,255,0.07)" stroke="rgba(93,177,255,0.22)" strokeWidth="1"/>
+                  {/* Top face */}
+                  <polygon points="201,146 123,185 149,198 227,159"
+                    fill="rgba(93,177,255,0.10)" stroke="rgba(93,177,255,0.28)" strokeWidth="1"/>
+                  {/* Shelf boards */}
+                  <line x1="227" y1="237" x2="149" y2="276" stroke="rgba(93,177,255,0.25)" strokeWidth="1"/>
+                  <line x1="123" y1="263" x2="149" y2="276" stroke="rgba(93,177,255,0.18)" strokeWidth="0.8"/>
+                  <line x1="227" y1="276" x2="149" y2="315" stroke="rgba(93,177,255,0.25)" strokeWidth="1"/>
+                  <line x1="123" y1="302" x2="149" y2="315" stroke="rgba(93,177,255,0.18)" strokeWidth="0.8"/>
+                  {/* Books on shelves (small rectangles) */}
+                  <rect x="153" y="202" width="7" height="30" rx="1"
+                    transform="skewY(-20)" fill="rgba(93,177,255,0.2)" stroke="rgba(93,177,255,0.3)" strokeWidth="0.5"/>
+                  <rect x="163" y="198" width="6" height="28" rx="1"
+                    transform="skewY(-20)" fill="rgba(159,151,255,0.2)" stroke="rgba(159,151,255,0.3)" strokeWidth="0.5"/>
+                  <rect x="172" y="196" width="8" height="32" rx="1"
+                    transform="skewY(-20)" fill="rgba(93,177,255,0.15)" stroke="rgba(93,177,255,0.25)" strokeWidth="0.5"/>
+
+                  {/* ── Desk — right wall ── */}
+                  {/* Top face */}
+                  <polygon points="438,251 490,277 456,294 404,268"
+                    fill="rgba(93,177,255,0.10)" stroke="rgba(93,177,255,0.28)" strokeWidth="1"/>
+                  {/* Front face */}
+                  <polygon points="404,268 456,294 456,377 404,351"
+                    fill="rgba(93,177,255,0.07)" stroke="rgba(93,177,255,0.22)" strokeWidth="1"/>
+                  {/* Right face */}
+                  <polygon points="490,277 456,294 456,377 490,360"
+                    fill="rgba(93,177,255,0.04)" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                  {/* Desk legs */}
+                  <line x1="404" y1="351" x2="404" y2="390" stroke="rgba(93,177,255,0.2)" strokeWidth="1.5"/>
+                  <line x1="456" y1="377" x2="456" y2="410" stroke="rgba(93,177,255,0.2)" strokeWidth="1.5"/>
+                  <line x1="490" y1="360" x2="490" y2="395" stroke="rgba(93,177,255,0.18)" strokeWidth="1.2"/>
+                  <line x1="438" y1="334" x2="438" y2="370" stroke="rgba(93,177,255,0.15)" strokeWidth="1"/>
+                  {/* Monitor on desk */}
+                  <polygon points="452,218 476,230 476,255 452,243"
+                    fill="rgba(93,177,255,0.12)" stroke="rgba(93,177,255,0.35)" strokeWidth="1"/>
+                  <line x1="452" y1="243" x2="454" y2="255" stroke="rgba(93,177,255,0.25)" strokeWidth="1.2"/>
+                  <line x1="476" y1="255" x2="478" y2="268" stroke="rgba(93,177,255,0.22)" strokeWidth="1.2"/>
+                  <line x1="454" y1="257" x2="478" y2="269" stroke="rgba(93,177,255,0.22)" strokeWidth="1"/>
+
+                  {/* ── Chair — in front of desk ── */}
+                  {/* Seat top */}
+                  <polygon points="399,283 425,296 404,307 378,294"
+                    fill="rgba(93,177,255,0.09)" stroke="rgba(93,177,255,0.25)" strokeWidth="1"/>
+                  {/* Seat front */}
+                  <polygon points="378,294 404,307 404,320 378,307"
+                    fill="rgba(93,177,255,0.06)" stroke="rgba(93,177,255,0.2)" strokeWidth="1"/>
+                  {/* Seat right */}
+                  <polygon points="425,296 404,307 404,320 425,309"
+                    fill="rgba(93,177,255,0.04)" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                  {/* Chair back — upright */}
+                  <polygon points="399,218 425,231 425,296 399,283"
+                    fill="rgba(93,177,255,0.07)" stroke="rgba(93,177,255,0.22)" strokeWidth="1"/>
+                  <polygon points="393,221 399,218 399,283 393,280"
+                    fill="rgba(93,177,255,0.04)" stroke="rgba(93,177,255,0.16)" strokeWidth="0.8"/>
+                  {/* Chair legs */}
+                  <line x1="378" y1="307" x2="374" y2="328" stroke="rgba(93,177,255,0.2)" strokeWidth="1.2"/>
+                  <line x1="404" y1="320" x2="400" y2="341" stroke="rgba(93,177,255,0.2)" strokeWidth="1.2"/>
+                  <line x1="425" y1="309" x2="421" y2="330" stroke="rgba(93,177,255,0.18)" strokeWidth="1"/>
+                </svg>
+
+                {/* Hotspot overlays */}
+                {hotspots.map(({ x, y, i }) => (
+                  <div key={i} className={`hotspot ${active === i ? 'active' : ''}`}
+                    style={{ left: x, top: y }}
+                    onClick={() => toggle(i)}>
+                    <div className="hotspot-pulse" />
+                    <div className="hotspot-ring">{INTERESTS[i].icon}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Info panel right */}
+            <div className="interests-panel">
+              <div className="interests-panel-inner">
+                {current ? (
+                  <div className="panel-card" key={active}>
+                    <div className="panel-icon">{current.icon}</div>
+                    <div className="panel-name">{current.name}</div>
+                    <div className="panel-desc">{current.desc}</div>
+                    <div className="panel-hint">Click again to dismiss</div>
+                  </div>
+                ) : (
+                  <div className="panel-empty">← Select a hotspot to explore</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function AboutSection() {
+      return (
+        <section className="section" data-section="about">
+          <div className="about-bg" />
+          <div className="about-content">
+            <div className="about-photo" />
+            <div className="about-right">
+              <p className="about-label">About me</p>
+              <h2 className="about-heading">
+                <SwapText alt="Nice to meet you :)">Who am I?</SwapText>
+              </h2>
+              <p className="about-body">
+                I'm a software engineer who loves creating beautiful products that
+                leave a wonderful impression. Meaningfully motivated, confidently
+                curious, and optimistically open-minded — currently working toward
+                a degree at Columbia University. My interests span Front End
+                Engineering, Mobile Development, and Machine Learning.
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    const EXPERIENCE = [
+      {
+        date: '2024 – Present',
+        role: 'Software Engineering Intern',
+        org: 'Company Name',
+        desc: 'Placeholder — add your real experience here. What did you ship? What impact did it have?',
+        tags: ['React', 'Node.js', 'Firebase'],
+      },
+      {
+        date: '2023',
+        role: 'Research Assistant',
+        org: 'Columbia University',
+        desc: 'Placeholder — describe your research role, the project, and what you contributed.',
+        tags: ['Python', 'Data Analysis'],
+      },
+    ];
+
+    const EDUCATION = [
+      {
+        date: '2023 – 2027',
+        role: 'B.S. Informatics',
+        org: 'Columbia University',
+        desc: 'Relevant coursework: Data Structures, Machine Learning, Web Development, Human-Computer Interaction.',
+        tags: ['Dean\'s List', 'GPA: X.X'],
+      },
+      {
+        date: '2019 – 2023',
+        role: 'High School Diploma',
+        org: 'Your High School',
+        desc: 'Placeholder — add any notable achievements, clubs, or awards from high school.',
+        tags: [],
+      },
+    ];
+
+    function ExperienceSection() {
+      const [tab, setTab] = React.useState('experience');
+      const items = tab === 'experience' ? EXPERIENCE : EDUCATION;
+
+      return (
+        <section className="section" data-section="experience">
+          <div className="exp-bg" />
+          <div className="exp-content">
+            <div className="exp-tabs">
+              <button className={`exp-tab ${tab === 'experience' ? 'active' : ''}`}
+                onClick={() => setTab('experience')}>Experience</button>
+              <button className={`exp-tab ${tab === 'education' ? 'active' : ''}`}
+                onClick={() => setTab('education')}>Education</button>
+            </div>
+            <div className="exp-list">
+              {items.map((item, i) => (
+                <div key={i} className="exp-item">
+                  <div className="exp-date">{item.date}</div>
+                  <div>
+                    <div className="exp-role">{item.role}</div>
+                    <div className="exp-org">{item.org}</div>
+                    <div className="exp-desc">{item.desc}</div>
+                    {item.tags.length > 0 && (
+                      <div className="exp-tags">
+                        {item.tags.map(t => (
+                          <span key={t} className="exp-tag">{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function SkillsSection() {
+      const groups = [
+        { title: 'Languages', items: ['Java', 'Python', 'R', 'JavaScript', 'HTML / CSS'] },
+        { title: 'Frameworks', items: ['Django', 'React', 'Tidyverse', 'Shiny'] },
+        { title: 'Technologies', items: ['Git / GitHub', 'Firebase', 'SQLite'] },
+      ];
+      return (
+        <section className="section" data-section="skills">
+          <div className="skills-bg" />
+          <div className="skills-content">
+            <p className="skills-label">What I work with</p>
+            <h2 className="skills-heading">Skills</h2>
+            <div className="skills-grid">
+              {groups.map(g => (
+                <div key={g.title}>
+                  <p className="skills-group-title">{g.title}</p>
+                  <div className="skills-list">
+                    {g.items.map(item => (
+                      <span key={item} className="skill-tag expand">{item}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    const PROJECTS = [
+      {
+        title: 'Project One',
+        desc: 'A placeholder for your first project. Add a real description once you\'re ready.',
+        tags: ['React', 'Firebase'],
+        letter: 'P1',
+        color: 'rgba(93,177,255,0.12)',
+      },
+      {
+        title: 'Project Two',
+        desc: 'Another project placeholder. What did you build here? What problem did it solve?',
+        tags: ['Python', 'Django'],
+        letter: 'P2',
+        color: 'rgba(159,151,255,0.12)',
+      },
+      {
+        title: 'Project Three',
+        desc: 'Showcase your most interesting work. Recruiters spend ~10 seconds per card.',
+        tags: ['JavaScript', 'CSS'],
+        letter: 'P3',
+        color: 'rgba(93,177,255,0.08)',
+      },
+      {
+        title: 'Project Four',
+        desc: 'Machine learning, mobile app, or something else entirely — put it here.',
+        tags: ['ML', 'Python'],
+        letter: 'P4',
+        color: 'rgba(188,195,255,0.1)',
+      },
+    ];
+
+    function ProjectsSection() {
+      const [idx, setIdx] = React.useState(0);
+
+      return (
+        <section className="section" data-section="projects">
+          <div className="projects-bg" />
+          <div className="projects-content">
+            <div className="projects-header">
+              <div>
+                <p className="projects-label">Selected work</p>
+                <h2 className="projects-heading">Projects</h2>
+              </div>
+              <div className="projects-counter">
+                <span>{idx + 1}</span> / {PROJECTS.length}
+              </div>
+            </div>
+
+            <div className="carousel-outer">
+              <div className="carousel-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
+                {PROJECTS.map((p, i) => (
+                  <div key={i} className="project-card">
+                    <div className="project-card-thumb" style={{ background: p.color }}>
+                      <div className="project-card-thumb-inner">{p.letter}</div>
+                    </div>
+                    <div className="project-card-body">
+                      <div className="project-card-title">{p.title}</div>
+                      <div className="project-card-desc">{p.desc}</div>
+                      <div className="project-card-tags">
+                        {p.tags.map(t => (
+                          <span key={t} className="project-tag">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+              <div className="carousel-arrows">
+                <button className="carousel-arrow" disabled={idx === 0}
+                  onClick={() => setIdx(i => Math.max(0, i - 1))}>←</button>
+                <button className="carousel-arrow" disabled={idx === PROJECTS.length - 1}
+                  onClick={() => setIdx(i => Math.min(PROJECTS.length - 1, i + 1))}>→</button>
+              </div>
+              <div className="carousel-progress">
+                {PROJECTS.map((_, i) => (
+                  <div key={i} className={`carousel-pip ${i === idx ? 'active' : ''}`}
+                    style={{ width: i === idx ? 32 : 16 }}
+                    onClick={() => setIdx(i)} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function ContactSection() {
+      return (
+        <section className="section" data-section="contact">
+          <div className="contact-bg" />
+          <div className="contact-content">
+            <p className="contact-label">Let's talk</p>
+            <h2 className="contact-heading">
+              <SwapText alt="Don't be shy →">
+                Get in touch.
+              </SwapText>
+            </h2>
+            <p className="contact-sub">Open to opportunities, collabs, and good conversations.</p>
+            <button className="contact-btn">Say hello →</button>
+          </div>
+        </section>
+      );
+    }
+
+    function App() {
+      const scrollRef = useRef(null);
+      const [proximity, setProximity] = useState(0);
+      const [activeSection, setActiveSection] = useState(0);
+      const rafRef = useRef(null);
+      const targetProximity = useRef(0);
+
+      // Mouse proximity to center
+      useEffect(() => {
+        const handleMouse = (e) => {
+          const cx = window.innerWidth / 2;
+          const cy = window.innerHeight / 2;
+          const dx = (e.clientX - cx) / cx;
+          const dy = (e.clientY - cy) / cy;
+          const dist = Math.sqrt(dx * dx + dy * dy) / Math.sqrt(2);
+          targetProximity.current = Math.max(0, 1 - dist);
+        };
+        window.addEventListener('mousemove', handleMouse);
+
+        // Smooth interpolation loop
+        let raf;
+        let cur = 0;
+        const loop = () => {
+          cur += (targetProximity.current - cur) * 0.06;
+          setProximity(cur);
+          raf = requestAnimationFrame(loop);
+        };
+        raf = requestAnimationFrame(loop);
+
+        return () => {
+          window.removeEventListener('mousemove', handleMouse);
+          cancelAnimationFrame(raf);
+        };
+      }, []);
+
+      // Track active section via scroll
+      useEffect(() => {
+        const wrap = scrollRef.current;
+        if (!wrap) return;
+        const handleScroll = () => {
+          const h = wrap.clientHeight;
+          const idx = Math.round(wrap.scrollTop / h);
+          setActiveSection(Math.min(idx, SECTIONS.length - 1));
+        };
+        wrap.addEventListener('scroll', handleScroll, { passive: true });
+        return () => wrap.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      const scrollTo = useCallback((sectionId) => {
+        const wrap = scrollRef.current;
+        if (!wrap) return;
+        const idx = SECTIONS.indexOf(sectionId);
+        if (idx >= 0) wrap.scrollTo({ top: idx * wrap.clientHeight, behavior: 'smooth' });
+      }, []);
+
+      // Blue proximity overlay
+      const blueIntensity = Math.pow(proximity, 1.5);
+
+      return (
+        <>
+          {/* Proximity blue overlay */}
+          <div className="proximity-overlay" style={{
+            background: `radial-gradient(ellipse 55% 55% at 50% 50%, rgba(20,60,160,${blueIntensity * 0.35}), transparent 70%)`,
+          }} />
+
+          <Nav activeSection={SECTIONS[activeSection]} scrollTo={scrollTo} />
+
+          {/* Scroll dot nav */}
+          <div className="scroll-dots">
+            {SECTIONS.map((s, i) => (
+              <div key={s} className={`scroll-dot ${i === activeSection ? 'active' : ''}`}
+                onClick={() => scrollTo(s)} title={s} />
+            ))}
+          </div>
+
+          <div className="scroll-wrap" ref={scrollRef}>
+            <HeroSection />
+            <AboutSection />
+            <SkillsSection />
+            <ExperienceSection />
+            <ProjectsSection />
+            <InterestsSection />
+            <ContactSection />
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
